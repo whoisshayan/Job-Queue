@@ -1,23 +1,37 @@
 from django.db import models
 
-# Create your models here.
+
+class PredefinedJob(models.Model):
+    code_name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
 
 
 class Job(models.Model):
-    # Define choices for the 'state' field
     class State(models.TextChoices):
-        PENDING = 'pending', 'Pending'
-        RUNNING = 'running', 'Running'
-        COMPLETED = 'completed', 'Completed'
+        PENDING = "pending", "Pending"
+        RUNNING = "running", "Running"
+        COMPLETED = "completed", "Completed"
 
-    # Define fields for the model
-    name = models.CharField(max_length=255)
-    description = models.TextField()
+    predefined_job = models.ForeignKey(
+        PredefinedJob,
+        on_delete=models.PROTECT,
+        related_name="jobs",
+    )
     state = models.CharField(
         max_length=10,
-        choices=State.choices,  # Link the choices here
-        default=State.PENDING,   # Set default value (optional)
+        choices=State.choices,
+        default=State.PENDING,
     )
 
+    class Meta:
+        ordering = ["id"]
+
     def __str__(self):
-        return self.name  # Return the 'name' field instead of 'title'
+        return f"{self.predefined_job.name} ({self.get_state_display()})"
