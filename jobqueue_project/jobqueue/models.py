@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class PredefinedJob(models.Model):
+class JobDefinition(models.Model):
     code_name = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=255)
     description = models.TextField()
@@ -13,25 +13,53 @@ class PredefinedJob(models.Model):
         return self.name
 
 
-class Job(models.Model):
-    class State(models.TextChoices):
+class JobExecution(models.Model):
+    class Status(models.TextChoices):
         PENDING = "pending", "Pending"
         RUNNING = "running", "Running"
         COMPLETED = "completed", "Completed"
+        FAILED = "failed", "Failed"
+        TIMEOUT = "timeout", "Timeout"
 
-    predefined_job = models.ForeignKey(
-        PredefinedJob,
-        on_delete=models.PROTECT,
-        related_name="jobs",
+    job_definition = models.ForeignKey(
+        JobDefinition,
+        on_delete=models.CASCADE,
+        related_name="executions",
     )
-    state = models.CharField(
+    job_name_snapshot = models.CharField(max_length=255, editable=False)
+    job_description_snapshot = models.TextField(editable=False)
+    status = models.CharField(
         max_length=10,
-        choices=State.choices,
-        default=State.PENDING,
+        choices=Status.choices,
+        default=Status.PENDING,
     )
+    result = models.TextField(blank=True, default="")
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    duration = models.DurationField(null=True, blank=True)
+    worker_id = models.CharField(max_length=255, null=True, blank=True)
+    output_file_path = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["id"]
+        ordering = ["-created_at", "-id"]
+
+    def populate_job_snapshot(self) -> None:
+        self.job_name_snapshot = self.job_definition.name
+        self.job_description_snapshot = self.job_definition.description
+
+    def save(self, *args, **kwargs):
+        if self._state.adding or not self.job_name_snapshot or not self.job_description_snapshot:
+            self.populate_job_snapshot()
+
+            update_fields = kwargs.get("update_fields")
+            if update_fields is not None:
+                kwargs["update_fields"] = set(update_fields) | {
+                    "job_name_snapshot",
+                    "job_description_snapshot",
+                }
+
+        return super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.predefined_job.name} ({self.get_state_display()})"
+        return f"{self.job_name_snapshot} ({self.get_status_display()})"

@@ -1,25 +1,49 @@
 from rest_framework import serializers
 
-from .models import Job, PredefinedJob
+from .models import JobDefinition, JobExecution
 
 
-class PredefinedJobSerializer(serializers.ModelSerializer):
+class JobDefinitionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PredefinedJob
+        model = JobDefinition
         fields = ["id", "code_name", "name", "description"]
         read_only_fields = fields
 
 
-class JobSerializer(serializers.ModelSerializer):
-    predefined_job = serializers.SlugRelatedField(
+class JobExecutionSerializer(serializers.ModelSerializer):
+    job_definition = serializers.SlugRelatedField(
         slug_field="code_name",
-        queryset=PredefinedJob.objects.all(),
+        queryset=JobDefinition.objects.all(),
     )
-    code_name = serializers.CharField(source="predefined_job.code_name", read_only=True)
-    name = serializers.CharField(source="predefined_job.name", read_only=True)
-    description = serializers.CharField(source="predefined_job.description", read_only=True)
+    job_name_snapshot = serializers.CharField(read_only=True)
+    job_description_snapshot = serializers.CharField(read_only=True)
 
     class Meta:
-        model = Job
-        fields = ["id", "predefined_job", "code_name", "name", "description", "state"]
-        read_only_fields = ["id", "code_name", "name", "description"]
+        model = JobExecution
+        fields = [
+            "id",
+            "job_definition",
+            "job_name_snapshot",
+            "job_description_snapshot",
+            "status",
+            "result",
+            "start_time",
+            "end_time",
+            "duration",
+            "worker_id",
+            "output_file_path",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "job_name_snapshot",
+            "job_description_snapshot",
+            "status",
+            "result",
+            "start_time",
+            "end_time",
+            "duration",
+            "worker_id",
+            "output_file_path",
+            "created_at",
+        ]

@@ -1,14 +1,19 @@
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 
-from .models import Job, PredefinedJob
-from .serializers import JobSerializer, PredefinedJobSerializer
-
-
-class PredefinedJobViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = PredefinedJob.objects.order_by("name")
-    serializer_class = PredefinedJobSerializer
+from .models import JobDefinition, JobExecution
+from .serializers import JobDefinitionSerializer, JobExecutionSerializer
 
 
-class JobViewSet(viewsets.ModelViewSet):
-    queryset = Job.objects.select_related("predefined_job").order_by("id")
-    serializer_class = JobSerializer
+class JobDefinitionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = JobDefinition.objects.order_by("name")
+    serializer_class = JobDefinitionSerializer
+
+
+class JobExecutionViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = JobExecution.objects.select_related("job_definition").order_by("-created_at", "-id")
+    serializer_class = JobExecutionSerializer

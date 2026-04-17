@@ -1,18 +1,18 @@
 from django.db import transaction
 
-from jobqueue.models import PredefinedJob
+from jobqueue.models import JobDefinition as JobDefinitionModel
 
 from .registry import list_jobs
 
 
-def sync_predefined_jobs_to_database() -> dict[str, int]:
+def sync_job_definitions_to_database() -> dict[str, int]:
     created_count = 0
     updated_count = 0
-    job_definitions = list_jobs()
+    registry_jobs = list_jobs()
 
     with transaction.atomic():
-        for job_definition in job_definitions:
-            _, created = PredefinedJob.objects.update_or_create(
+        for job_definition in registry_jobs:
+            _, created = JobDefinitionModel.objects.update_or_create(
                 code_name=job_definition.code_name,
                 defaults={
                     "name": job_definition.name,
@@ -28,5 +28,5 @@ def sync_predefined_jobs_to_database() -> dict[str, int]:
     return {
         "created": created_count,
         "updated": updated_count,
-        "total": len(job_definitions),
+        "total": len(registry_jobs),
     }
