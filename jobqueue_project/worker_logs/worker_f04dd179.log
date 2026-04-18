@@ -1,0 +1,29 @@
+[2026-04-18T05:48:08.079409+00:00] worker_id=worker_f04dd179 job_execution_id=15 job_name=Sum Numbers 1 to 1000 status=completed
+500500
+--------------------------------------------------------------------------------
+[2026-04-18T05:48:08.101633+00:00] worker_id=worker_f04dd179 job_execution_id=16 job_name=Sort Small Array status=completed
+[1, 2, 3, 4, 5, 6, 7, 8, 9]
+--------------------------------------------------------------------------------
+[2026-04-18T05:48:35.137506+00:00] worker_id=worker_f04dd179 job_execution_id=18 job_name=Print Numbers 1 to 100 status=completed
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100]
+--------------------------------------------------------------------------------
+[2026-04-18T05:48:50.165785+00:00] worker_id=worker_f04dd179 job_execution_id=19 job_name=Division by Zero status=failed
+ZeroDivisionError: division by zero
+Traceback (most recent call last):
+  File "D:\Tabdeal\Code\jobqueue_project\worker.py", line 157, in run_execution
+    output = job_callable(execution)
+  File "D:\Tabdeal\Code\jobqueue_project\jobqueue\jobs\registry.py", line 39, in runner
+    return job_definition.execute()
+           ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\Tabdeal\Code\jobqueue_project\jobqueue\jobs\division_by_zero.py", line 5, in division_by_zero
+    return 1 / 0
+           ~~^~~
+ZeroDivisionError: division by zero
+
+--------------------------------------------------------------------------------
+[2026-04-18T05:49:02.192463+00:00] worker_id=worker_f04dd179 job_execution_id=20 job_name=Infinite Loop status=failed
+Unknown job type: Infinite Loop
+--------------------------------------------------------------------------------
+[2026-04-18T05:49:11.217532+00:00] worker_id=worker_f04dd179 job_execution_id=21 job_name=sample_job status=completed
+sample_job finished successfully for execution 21.
+--------------------------------------------------------------------------------

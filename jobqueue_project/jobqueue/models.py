@@ -34,6 +34,7 @@ class JobExecution(models.Model):
         default=Status.PENDING,
     )
     result = models.TextField(blank=True, default="")
+    error = models.TextField(blank=True, default="")
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     duration = models.DurationField(null=True, blank=True)

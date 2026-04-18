@@ -20,6 +20,12 @@ class JobExecutionAdmin(admin.ModelAdmin):
     readonly_fields = (
         "job_name_snapshot",
         "job_description_snapshot",
+        "result",
+        "error",
+        "start_time",
+        "end_time",
+        "worker_id",
+        "output_file_path",
         "created_at",
         "duration",
     )
@@ -31,4 +37,5 @@ class JobExecutionAdmin(admin.ModelAdmin):
         "job_description_snapshot",
         "worker_id",
         "result",
+        "error",
     )

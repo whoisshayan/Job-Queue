@@ -8,6 +8,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .jobs import JOB_REGISTRY, get_job, list_jobs, run_job
+from .jobs import get_job_callable
 from .models import JobDefinition, JobExecution
 
 
@@ -26,17 +27,19 @@ class JobExecutionApiTests(APITestCase):
         response = self.client.get(reverse("job-definition-list"))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 6)
-        self.assertEqual(response.data[0]["code_name"], "division_by_zero")
-        self.assertIn("name", response.data[0])
-        self.assertIn("description", response.data[0])
+        self.assertEqual(len(response.data), 8)
+        returned_code_names = {item["code_name"] for item in response.data}
+        self.assertIn("sample_job", returned_code_names)
+        self.assertIn("debug_job", returned_code_names)
 
     def test_predefined_job_alias_returns_catalog_data(self):
         response = self.client.get(reverse("predefined-job-list"))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 6)
-        self.assertEqual(response.data[0]["code_name"], "division_by_zero")
+        self.assertEqual(len(response.data), 8)
+        returned_code_names = {item["code_name"] for item in response.data}
+        self.assertIn("sample_job", returned_code_names)
+        self.assertIn("debug_job", returned_code_names)
 
     def test_job_list_returns_selected_job_definition_details(self):
         job_definition = JobDefinition.objects.get(code_name="sort_small_array")
@@ -77,6 +80,7 @@ class JobExecutionApiTests(APITestCase):
         )
         self.assertEqual(response.data["status"], JobExecution.Status.PENDING)
         self.assertEqual(response.data["result"], "")
+        self.assertEqual(response.data["error"], "")
         self.assertIsNone(response.data["start_time"])
         self.assertIsNone(response.data["end_time"])
         self.assertIsNone(response.data["duration"])
@@ -107,6 +111,8 @@ class JobRegistryTests(SimpleTestCase):
                 "find_primes_1_to_100",
                 "division_by_zero",
                 "infinite_loop",
+                "sample_job",
+                "debug_job",
             },
         )
 
@@ -128,7 +134,12 @@ class JobRegistryTests(SimpleTestCase):
         )
 
     def test_list_jobs_returns_all_job_definitions(self):
-        self.assertEqual(len(list_jobs()), 6)
+        self.assertEqual(len(list_jobs()), 8)
+
+    def test_worker_registry_returns_callables_for_sample_jobs(self):
+        self.assertTrue(callable(get_job_callable("sample_job")))
+        self.assertTrue(callable(get_job_callable("debug_job")))
+        self.assertIsNone(get_job_callable("missing_job_type"))
 
     def test_unknown_job_raises_helpful_error(self):
         with self.assertRaisesMessage(KeyError, "Unknown job code_name: missing_job"):
@@ -161,6 +172,7 @@ class JobExecutionModelTests(TestCase):
         )
         self.assertEqual(execution.status, JobExecution.Status.PENDING)
         self.assertEqual(execution.result, "")
+        self.assertEqual(execution.error, "")
         self.assertIsNone(execution.start_time)
         self.assertIsNone(execution.end_time)
         self.assertIsNone(execution.duration)
@@ -201,7 +213,7 @@ class SyncPredefinedJobsCommandTests(TestCase):
 
         call_command("sync_predefined_jobs", stdout=out)
 
-        self.assertEqual(JobDefinition.objects.count(), 6)
+        self.assertEqual(JobDefinition.objects.count(), 8)
 
         job_definition.refresh_from_db()
         self.assertEqual(job_definition.name, "Sort Small Array")
